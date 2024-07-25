@@ -1,12 +1,13 @@
-import { createStore } from 'vuex';
-import { ApolloClient, InMemoryCache, gql } from '@apollo/client/core';
+import { createStore } from "vuex";
+import { ApolloClient, InMemoryCache, gql } from "@apollo/client/core";
 
 const apolloClient = new ApolloClient({
-  uri: 'https://sirefcode.hasura.app/v1/graphql',
+  uri: "https://sirefcode.hasura.app/v1/graphql",
   cache: new InMemoryCache(),
   headers: {
-    'x-hasura-admin-secret': 'jw8y3lwW7Vk4HKuROjlbs3flnrYaDsE1vkqNqhtTgv3rIo8bC655Fx6WmSZk4KvO',
-    'Content-Type': 'application/json',
+    "x-hasura-admin-secret":
+      "jw8y3lwW7Vk4HKuROjlbs3flnrYaDsE1vkqNqhtTgv3rIo8bC655Fx6WmSZk4KvO",
+    "Content-Type": "application/json",
   },
 });
 
@@ -33,7 +34,7 @@ const store = createStore({
   },
   actions: {
     async fetchCategories({ commit }) {
-      commit('SET_LOADING', true);
+      commit("SET_LOADING", true);
       try {
         const { data } = await apolloClient.query({
           query: gql`
@@ -46,15 +47,15 @@ const store = createStore({
             }
           `,
         });
-        commit('SET_CATEGORIES', data.categories);
+        commit("SET_CATEGORIES", data.categories);
       } catch (error) {
-        commit('SET_ERROR', error.message);
+        commit("SET_ERROR", error.message);
       } finally {
-        commit('SET_LOADING', false);
+        commit("SET_LOADING", false);
       }
     },
     async fetchProducts({ commit }) {
-      commit('SET_LOADING', true);
+      commit("SET_LOADING", true);
       try {
         const { data } = await apolloClient.query({
           query: gql`
@@ -69,84 +70,33 @@ const store = createStore({
             }
           `,
         });
-        commit('SET_PRODUCTS', data.products);
+        commit("SET_PRODUCTS", data.products);
       } catch (error) {
-        commit('SET_ERROR', error.message);
+        commit("SET_ERROR", error.message);
       } finally {
-        commit('SET_LOADING', false);
+        commit("SET_LOADING", false);
       }
     },
-    async createCategory({ commit }, newCategory) {
-      commit('SET_LOADING', true);
+    async createProduct({ commit }, product) {
+      console.log(product);
+      commit("SET_LOADING", true);
       try {
         await apolloClient.mutate({
           mutation: gql`
-            mutation CreateCategory($name: String!, $parent_id: Int) {
-              insert_categories_one(object: { name: $name, parent_id: $parent_id }) {
-                id
-                name
-                parent_id
-              }
-            }
-          `,
-          variables: newCategory,
-        });
-        await this.dispatch('fetchCategories');
-      } catch (error) {
-        commit('SET_ERROR', error.message);
-      } finally {
-        commit('SET_LOADING', false);
-      }
-    },
-    async updateCategory({ commit }, { id, updates }) {
-      commit('SET_LOADING', true);
-      try {
-        await apolloClient.mutate({
-          mutation: gql`
-            mutation UpdateCategory($id: Int!, $name: String, $parent_id: Int) {
-              update_categories_by_pk(pk_columns: { id: $id }, _set: { name: $name, parent_id: $parent_id }) {
-                id
-                name
-                parent_id
-              }
-            }
-          `,
-          variables: { id, ...updates },
-        });
-        await this.dispatch('fetchCategories');
-      } catch (error) {
-        commit('SET_ERROR', error.message);
-      } finally {
-        commit('SET_LOADING', false);
-      }
-    },
-    async deleteCategory({ commit }, id) {
-      commit('SET_LOADING', true);
-      try {
-        await apolloClient.mutate({
-          mutation: gql`
-            mutation DeleteCategory($id: Int!) {
-              delete_categories_by_pk(id: $id) {
-                id
-              }
-            }
-          `,
-          variables: { id },
-        });
-        await this.dispatch('fetchCategories');
-      } catch (error) {
-        commit('SET_ERROR', error.message);
-      } finally {
-        commit('SET_LOADING', false);
-      }
-    },
-    async createProduct({ commit }, newProduct) {
-      commit('SET_LOADING', true);
-      try {
-        await apolloClient.mutate({
-          mutation: gql`
-            mutation CreateProduct($name: String!, $price: Float!, $quantity: Int!, $category_id: Int!) {
-              insert_products_one(object: { name: $name, price: $price, quantity: $quantity, category_id: $category_id }) {
+            mutation CreateProduct(
+              $name: String!
+              $price: numeric!
+              $quantity: Int!
+              $category_id: Int!
+            ) {
+              insert_products_one(
+                object: {
+                  name: $name
+                  price: $price
+                  quantity: $quantity
+                  category_id: $category_id
+                }
+              ) {
                 id
                 name
                 price
@@ -155,22 +105,39 @@ const store = createStore({
               }
             }
           `,
-          variables: newProduct,
+          variables: product,
         });
-        await this.dispatch('fetchProducts');
+        console.log("Berhasil menambahkan produk");
+        await this.dispatch("fetchProducts"); // Mengambil ulang data produk setelah berhasil
       } catch (error) {
-        commit('SET_ERROR', error.message);
+        commit("SET_ERROR", error.message);
+        throw error; // Pastikan error dilempar agar bisa ditangani di komponen
       } finally {
-        commit('SET_LOADING', false);
+        commit("SET_LOADING", false);
       }
     },
-    async updateProduct({ commit }, { id, updates }) {
-      commit('SET_LOADING', true);
+    async updateProduct({ commit }, product) {
+      console.log(product);
+      commit("SET_LOADING", true);
       try {
         await apolloClient.mutate({
           mutation: gql`
-            mutation UpdateProduct($id: Int!, $name: String, $price: Float, $quantity: Int, $category_id: Int) {
-              update_products_by_pk(pk_columns: { id: $id }, _set: { name: $name, price: $price, quantity: $quantity, category_id: $category_id }) {
+            mutation UpdateProduct(
+              $id: Int!
+              $name: String!
+              $price: numeric!
+              $quantity: Int
+              $category_id: Int
+            ) {
+              update_products_by_pk(
+                pk_columns: { id: $id }
+                _set: {
+                  name: $name
+                  price: $price
+                  quantity: $quantity
+                  category_id: $category_id
+                }
+              ) {
                 id
                 name
                 price
@@ -179,33 +146,15 @@ const store = createStore({
               }
             }
           `,
-          variables: { id, ...updates },
+          variables: product,
         });
-        await this.dispatch('fetchProducts');
+        console.log("Berhasil memperbarui produk");
+        await this.dispatch("fetchProducts"); // Mengambil ulang data produk setelah berhasil
       } catch (error) {
-        commit('SET_ERROR', error.message);
+        commit("SET_ERROR", error.message);
+        throw error; // Pastikan error dilempar agar bisa ditangani di komponen
       } finally {
-        commit('SET_LOADING', false);
-      }
-    },
-    async deleteProduct({ commit }, id) {
-      commit('SET_LOADING', true);
-      try {
-        await apolloClient.mutate({
-          mutation: gql`
-            mutation DeleteProduct($id: Int!) {
-              delete_products_by_pk(id: $id) {
-                id
-              }
-            }
-          `,
-          variables: { id },
-        });
-        await this.dispatch('fetchProducts');
-      } catch (error) {
-        commit('SET_ERROR', error.message);
-      } finally {
-        commit('SET_LOADING', false);
+        commit("SET_LOADING", false);
       }
     },
   },

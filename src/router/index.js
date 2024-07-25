@@ -1,17 +1,26 @@
-import { createRouter, createWebHistory } from 'vue-router';
-import MainLayout from '../components/MainLayout.vue';
-import Home from '../views/Home.vue';
-import Product from '../views/Product.vue';
-import Categories from '../views/Categories.vue';
+import { createRouter, createWebHistory } from "vue-router";
+import MainLayout from "../components/MainLayout.vue";
+import Home from "../views/Home.vue";
+import ProductList from "../views/Product.vue";
+import Categories from "../views/Categories.vue";
+import addProduct from "../components/Product/addProduct.vue";
+import EditProduct from "../components/Product/editProduct.vue";
 
 const routes = [
   {
-    path: '/',
+    path: "/",
     component: MainLayout,
     children: [
-      { path: '', component: Home },
-      { path: 'product', component: Product },
-      { path: 'categories', component: Categories },
+      { path: "", component: Home },
+      { path: "product", component: ProductList, name: "ProductList" },
+      { path: "addproduct", component: addProduct },
+      {
+        path: "editproduct/:id",
+        component: EditProduct,
+        name: "EditProduct",
+        props: true,
+      },
+      { path: "categories", component: Categories },
     ],
   },
 ];
